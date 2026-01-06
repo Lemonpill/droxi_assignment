@@ -6,7 +6,7 @@
 * Java 8 or higher (for report serving)
 * Node 2.21.0 or higher + npm package manager (for report serving)
 
-## Installation
+## Installation (local)
 
 1. Install allure commandline by running `npm i -g allure-commandline`
 2. Install the dependencies by running `pipenv install`
