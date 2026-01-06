@@ -85,5 +85,3 @@ def pytest_runtest_makereport(item, call):
         return
     png = page.screenshot(full_page=True)
     allure.attach(png, name="screenshot", attachment_type=allure.attachment_type.PNG)
-    html = page.content()
-    allure.attach(html, name="page-source", attachment_type=allure.attachment_type.HTML)

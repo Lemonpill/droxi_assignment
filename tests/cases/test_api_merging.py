@@ -1,5 +1,6 @@
 import allure
 import pytest
+from allure_commons.types import AttachmentType
 from src.api_clients.gmail_client import GmailClient
 from src.api_clients.trello_client import TrelloClient
 from src.models.email import Email
@@ -18,16 +19,19 @@ def test_api_merging(gmail_client: GmailClient, trello_client: TrelloClient):
     "To you
     my friend".
     """
+    with allure.step("Load cards from Trello API"):
+        try:
+            card_list = trello_client.card_list
+            allure.attach(attachment_type=AttachmentType.TEXT, body="\n".join(str(c) for c in card_list))
+        except Exception as e:
+            pytest.fail(f"failed to load cards from trello: {e}")
 
-    try:
-        card_list = trello_client.card_list
-    except Exception as e:
-        pytest.fail(f"failed to load cards from trello: {e}")
-
-    try:
-        mail_list = gmail_client.mail
-    except Exception as e:
-        pytest.fail(f"failed to load mails from gmail: {e}")
+    with allure.step("Load emails from Gmail mock API"):
+        try:
+            mail_list = gmail_client.mail
+            allure.attach(attachment_type=AttachmentType.TEXT, body="\n".join(str(c) for c in mail_list))
+        except Exception as e:
+            pytest.fail(f"failed to load mails from gmail: {e}")
 
     # group email lists by their subjects
     subj_mail_map: dict[str, list[Email]] = {}
@@ -37,21 +41,33 @@ def test_api_merging(gmail_client: GmailClient, trello_client: TrelloClient):
             subj_mail_map[mail_sub] = []
         subj_mail_map[mail_sub].append(mail)
 
+    # need to verify we test at least one case
+    found_candidates = False
+
     # iterate email groups to find merging test candidates
     for mail_sub, mail_lst in subj_mail_map.items():
         if len(mail_lst) < 2:
             # at least 2 emails with similar subject for merge test
             continue
 
-        mail_card_list = cards_by_mail_subj(card_list, mail_sub)
+        if not found_candidates:
+            found_candidates = True
 
-        # email subject must have exactly one card
-        card_list_l = len(mail_card_list)
-        assert card_list_l == 1, f"found {card_list_l} cards for subject {mail_sub}"
+        mail_card_list = cards_by_mail_subj(card_list, mail_sub)
+        with allure.step(f"Verify only one card for subject '{mail_sub}'"):
+            allure.attach(attachment_type=AttachmentType.TEXT, body="\n".join(str(c) for c in mail_card_list))
+            # email subject must have exactly one card
+            card_list_l = len(mail_card_list)
+            assert card_list_l == 1, f"found {card_list_l} cards for subject {mail_sub}"
 
         # concatenate email bodies separated by new line
         exp_card_desc = "\n".join(m.body for m in sorted(mail_lst, key=parse_date))
 
-        # card description must match concatenated email bodies
-        act_card_desc = mail_card_list[0].desc
-        assert act_card_desc == exp_card_desc, f"expected description '{exp_card_desc}'. got '{act_card_desc}'"
+        with allure.step(f"Verify card description is '{exp_card_desc}'"):
+            # card description must match concatenated email bodies
+            act_card_desc = mail_card_list[0].desc
+            allure.attach(attachment_type=AttachmentType.TEXT, body=act_card_desc)
+            assert act_card_desc == exp_card_desc, f"expected description '{exp_card_desc}'. got '{act_card_desc}'"
+
+    with allure.step("Verify at least one merge test"):
+        assert found_candidates, "mergeables not found for mailbox"

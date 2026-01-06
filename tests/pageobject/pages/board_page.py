@@ -21,4 +21,4 @@ class BoardPage:
 
     def open(self):
         self.page.goto(self.page_url)
-        self.page.wait_for_load_state("domcontentloaded")
+        self.page.wait_for_load_state("networkidle")
