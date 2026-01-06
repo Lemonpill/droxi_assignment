@@ -38,7 +38,8 @@ jobs:
             -v $GITHUB_WORKSPACE/reports:/app/reports \
             droxi-tests:ci
 
-      - name: Upload Allure results
+      - if: always()
+        name: Upload Allure results
         uses: actions/upload-artifact@v4
         with:
           name: allure-results
