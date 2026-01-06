@@ -1,10 +1,12 @@
 import pytest
+import allure
 from playwright.sync_api import Page
 from tests.settings import Settings
 from tests.pageobject.pages.board_page import BoardPage
 
 
-def test_card_ui(authenticated_page: Page, settings: Settings):
+@allure.title("Scenario 2: Specific Card Validation")
+def test_gui_specific_card_validation(authenticated_page: Page, settings: Settings):
     """
     1. Login to trello.
     2. Navigate to the Trello Board link provided in Technical Details.

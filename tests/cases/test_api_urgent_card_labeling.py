@@ -1,3 +1,4 @@
+import allure
 import pytest
 from src.api_clients.gmail_client import GmailClient
 from src.api_clients.trello_client import TrelloClient
@@ -5,7 +6,8 @@ from src.models.card import Card
 from src.utils import cards_by_mail_subj
 
 
-def test_sync_api(gmail_client: GmailClient, trello_client: TrelloClient):
+@allure.title("Scenario: Sync Validation (Urgent Card Labeling)")
+def test_api_urgent_card_labeling(gmail_client: GmailClient, trello_client: TrelloClient):
     """
     Urgent Card Labeling: Each "mail" whose body contains the word "Urgent" should
     appear as a card in Trello with the "Urgent" label.

@@ -1,3 +1,4 @@
+import allure
 import pytest
 from src.api_clients.gmail_client import GmailClient
 from src.api_clients.trello_client import TrelloClient
@@ -5,7 +6,8 @@ from src.models.email import Email
 from src.utils import parse_date, cards_by_mail_subj
 
 
-def test_sync_merge_api(gmail_client: GmailClient, trello_client: TrelloClient):
+@allure.title("Scenario: Sync Validation (Merging)")
+def test_api_merging(gmail_client: GmailClient, trello_client: TrelloClient):
     """
     Merging: When there are some "emails" with the same subject (and different body),
     they must appear as one card in Trello, with the bodies concatenated in the description.
