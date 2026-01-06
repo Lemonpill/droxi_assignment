@@ -1,3 +1,4 @@
+import pytest
 from src.api_clients.gmail_client import GmailClient
 from src.api_clients.trello_client import TrelloClient
 from src.models.email import Email
@@ -16,8 +17,15 @@ def test_sync_merge_api(gmail_client: GmailClient, trello_client: TrelloClient):
     my friend".
     """
 
-    card_list = trello_client.card_list
-    mail_list = gmail_client.mail
+    try:
+        card_list = trello_client.card_list
+    except Exception as e:
+        pytest.fail(f"failed to load cards from trello: {e}")
+
+    try:
+        mail_list = gmail_client.mail
+    except Exception as e:
+        pytest.fail(f"failed to load mails from gmail: {e}")
 
     # group email lists by their subjects
     subj_mail_map: dict[str, list[Email]] = {}
@@ -32,12 +40,16 @@ def test_sync_merge_api(gmail_client: GmailClient, trello_client: TrelloClient):
         if len(mail_lst) < 2:
             # at least 2 emails with similar subject for merge test
             continue
+
         mail_card_list = cards_by_mail_subj(card_list, mail_sub)
+
         # email subject must have exactly one card
         card_list_l = len(mail_card_list)
         assert card_list_l == 1, f"found {card_list_l} cards for subject {mail_sub}"
+
         # concatenate email bodies separated by new line
         exp_card_desc = "\n".join(m.body for m in sorted(mail_lst, key=parse_date))
+
         # card description must match concatenated email bodies
         act_card_desc = mail_card_list[0].desc
         assert act_card_desc == exp_card_desc, f"expected description '{exp_card_desc}'. got '{act_card_desc}'"

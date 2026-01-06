@@ -1,3 +1,4 @@
+import pytest
 from playwright.sync_api import Page
 from tests.settings import Settings
 from tests.pageobject.pages.board_page import BoardPage
@@ -15,25 +16,53 @@ def test_card_urgent_ui(authenticated_page: Page, settings: Settings):
         ○ Current status (To Do, In Progress, Done)
     """
 
-    board_page = BoardPage(page=authenticated_page, page_url=settings.PAGE_URL_BOARD)
-    board_page.open()
+    try:
+        page = BoardPage(page=authenticated_page, page_url=settings.PAGE_URL_BOARD)
+        page.open()
+    except Exception as e:
+        pytest.fail(f"failed to open page: {e}")
 
-    urgent_cards = board_page.urgent_cards
+    try:
+        urgent_cards = page.urgent_cards
+    except Exception as e:
+        pytest.fail(f"failed to locate urgent cards: {e}")
+
     # must have at least one urgent card for this test
     assert urgent_cards, "urgent cards not found"
 
     # report card details for each urgent card
     for card in urgent_cards:
-        card_back = card.open()
+        try:
+            card_back = card.open()
+        except Exception as e:
+            pytest.fail(f"failed to open card: {e}")
 
-        title = card_back.title
-        description = card_back.description if card.has_description else None
-        labels = card_back.labels
-        status = card_back.status
+        try:
+            title = card_back.title
+        except Exception as e:
+            pytest.fail(f"failed to read card title: {e}")
+
+        try:
+            description = card_back.description if card.has_description else None
+        except Exception as e:
+            pytest.fail(f"failed to read card description: {e}")
+
+        try:
+            labels = card_back.labels
+        except Exception as e:
+            pytest.fail(f"failed to read card labels: {e}")
+
+        try:
+            status = card_back.status
+        except Exception as e:
+            pytest.fail(f"failed to read card status: {e}")
 
         print(f"TITLE:          {title}")
         print(f"DESCRIPTION:    {description}")
         print(f"LABELS:         {labels}")
         print(f"STATUS:         {status}")
 
-        card_back.close()
+        try:
+            card_back.close()
+        except Exception as e:
+            pytest.fail(f"failed to close card: {e}")

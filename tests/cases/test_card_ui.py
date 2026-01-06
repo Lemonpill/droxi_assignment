@@ -1,3 +1,4 @@
+import pytest
 from playwright.sync_api import Page
 from tests.settings import Settings
 from tests.pageobject.pages.board_page import BoardPage
@@ -22,25 +23,52 @@ def test_card_ui(authenticated_page: Page, settings: Settings):
     exp_label = "New"
     exp_status = "To Do"
 
-    page = BoardPage(page=authenticated_page, page_url=settings.PAGE_URL_BOARD)
-    page.open()
+    try:
+        page = BoardPage(page=authenticated_page, page_url=settings.PAGE_URL_BOARD)
+        page.open()
+    except Exception as e:
+        pytest.fail(f"failed to open page: {e}")
 
     # locate and open card by expected status and name
-    card = page.get_list_card(list_name=exp_status, card_name=exp_title)
-    card_back = card.open()
+    try:
+        card = page.get_list_card(list_name=exp_status, card_name=exp_title)
+        card_back = card.open()
+    except Exception as e:
+        pytest.fail(f"failed to open card: {e}")
 
-    act_title = card_back.title
-    act_description = card_back.description
-    act_labels = card_back.labels
-    act_status = card_back.status
+    try:
+        act_title = card_back.title
+    except Exception as e:
+        pytest.fail(f"failed to read card title: {e}")
+
+    try:
+        act_description = card_back.description
+    except Exception as e:
+        pytest.fail(f"failed to read card description: {e}")
+
+    try:
+        act_labels = card_back.labels
+    except Exception as e:
+        pytest.fail(f"failed to read card labels: {e}")
+
+    try:
+        act_status = card_back.status
+    except Exception as e:
+        pytest.fail(f"failed to read card status: {e}")
 
     # card title must match the expected
     assert act_title == exp_title, f"expected title '{exp_title}'. got '{act_title}'"
+
     # card description must match the expected
     assert act_description == exp_description, f"expected description '{exp_description}'. got '{act_description}'"
+
     # card must include the expected label
     assert exp_label in act_labels, f"expected label '{exp_label}' in '{act_labels}'"
+
     # card status must be equal expected status
     assert act_status == exp_status, f"expected status '{exp_status}'. got '{act_status}'"
 
-    card_back.close()
+    try:
+        card_back.close()
+    except Exception as e:
+        pytest.fail(f"failed to close card: {e}")
