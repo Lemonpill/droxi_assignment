@@ -3,8 +3,8 @@
 ## Requirements
 
 * Python (3.13) + pipenv virtual environment
-* Java 8 or higher
-* Node 2.21.0 or higher + npm package manager
+* Java 8 or higher (for report serving)
+* Node 2.21.0 or higher + npm package manager (for report serving)
 
 ## Installation
 
