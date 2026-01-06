@@ -1,32 +1,27 @@
-FROM ubuntu:22.04
+FROM python:3.13-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends \
-    software-properties-common curl gnupg ca-certificates build-essential apt-transport-https wget unzip git lsb-release \
-  && add-apt-repository ppa:deadsnakes/ppa -y \
-  && apt-get update \
-  && apt-get install -y python3.13 python3.13-venv python3.13-dev python3-pip openjdk-11-jdk \
-  && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-  && apt-get install -y nodejs \
-  && python3.13 -m pip install --upgrade pip \
-  && pip install pipenv playwright allure-pytest \
-  && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
 
-# Copy Pipfile first for dependency install layer
-COPY Pipfile Pipfile.lock* /app/
+# Install a minimal set of system deps required by Playwright browsers
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    curl wget ca-certificates gnupg apt-transport-https build-essential \
+    libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libx11-6 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2 libpangocairo-1.0-0 libgtk-3-0 libxss1 libdrm2 libxshmfence1 fonts-liberation \
+  && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade pip pipenv \
-  && (pipenv install --system --deploy || pipenv install --system)
+# Use generated requirements.txt (created from pipenv by the developer)
+COPY requirements.txt /app/requirements.txt
+
+RUN python -m pip install --upgrade pip \
+  && pip install -r /app/requirements.txt
 
 # Copy project files
 COPY . /app
 
-# Install Playwright browsers + system deps
-RUN python3.13 -m playwright install --with-deps
+# Install Playwright browsers and required system packages
+RUN python -m playwright install --with-deps
 
 # Ensure reports dir exists
 RUN mkdir -p /app/reports/allure-results
