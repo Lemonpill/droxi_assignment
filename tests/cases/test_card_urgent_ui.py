@@ -1,3 +1,14 @@
+"""
+1. Login to trello.
+2. Navigate to the Trello Board link provided in Technical Details.
+3. Find all cards with the "Urgent" label across all columns.
+4. For each urgent card, extract and report:
+    ○ Card title
+    ○ Card description
+    ○ Labels
+    ○ Current status (To Do, In Progress, Done)
+"""
+
 from playwright.sync_api import Page
 from tests.settings import Settings
 from tests.pageobject.pages.board_page import BoardPage

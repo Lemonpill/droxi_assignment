@@ -1,3 +1,14 @@
+"""
+Merging: When there are some "emails" with the same subject (and different body),
+they must appear as one card in Trello, with the bodies concatenated in the description.
+
+1. Mail 1: subject: "Hello", body: "To you"
+2. Mail 2: subject: "Hello", body: "my friend"
+3. Trello: a card with title "Hello" and description:
+"To you
+my friend".
+"""
+
 import pytest
 from src.api_clients.gmail_client import GmailClient
 from src.api_clients.trello_client import TrelloClient

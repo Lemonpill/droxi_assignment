@@ -1,3 +1,15 @@
+"""
+1. Login to trello.
+2. Navigate to the Trello Board link provided in Technical Details.
+3. Locate and open the "summarize the meeting" card from the board view.
+4. Extract and validate card details:
+    ○ Card title: Verify it matches "summarize the meeting".
+    ○ Description: Verify description text matches exactly: "For all of us. Please do so".
+    ○ Labels: Extract all labels and verify the "New" label is present.
+    ○ Current status: Verify the card is in the "To Do" column.
+5. Close the card modal and return to board view.
+"""
+
 from playwright.sync_api import Page
 from tests.settings import Settings
 from tests.pageobject.pages.board_page import BoardPage

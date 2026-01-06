@@ -1,3 +1,8 @@
+"""
+Urgent Card Labeling: Each "mail" whose body contains the word "Urgent" should
+appear as a card in Trello with the "Urgent" label.
+"""
+
 import pytest
 from src.api_clients.gmail_client import GmailClient
 from src.api_clients.trello_client import TrelloClient
