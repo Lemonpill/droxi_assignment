@@ -1,0 +1,26 @@
+from playwright.sync_api import Page
+from tests.settings import Settings
+from tests.pageobject.pages.board_page import BoardPage
+
+
+def test_card_urgent_ui(authenticated_page: Page, settings: Settings):
+    board_page = BoardPage(page=authenticated_page, page_url=settings.PAGE_URL_BOARD)
+    board_page.open()
+
+    urgent_cards = board_page.urgent_cards
+    assert len(urgent_cards) > 0
+
+    for card in urgent_cards:
+        card_back = card.open()
+
+        title = card_back.title
+        description = card_back.description if card.has_description else None
+        labels = card_back.labels
+        status = card_back.status
+
+        print(f"TITLE:          {title}")
+        print(f"DESCRIPTION:    {description}")
+        print(f"LABELS:         {labels}")
+        print(f"STATUS:         {status}")
+
+        card_back.close()
