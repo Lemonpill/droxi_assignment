@@ -3,6 +3,10 @@ from src.models.card import Card
 
 
 class TrelloClient:
+    """
+    trello client: http client for fetching board cards from provided endpoint
+    """
+
     def __init__(self, api_key: str, api_token: str, endpoint: str):
         self.api_key = api_key
         self.api_token = api_token
@@ -10,9 +14,11 @@ class TrelloClient:
 
     @property
     def card_list(self):
+        # load cards from endpoint
         resp = requests.get(self.endpoint, params={"key": self.api_key, "token": self.api_token})
         resp_json = resp.json()
 
+        # validate / parse each card item
         cards: list[Card] = []
         for c in resp_json:
             name = c.get("name")
@@ -25,4 +31,6 @@ class TrelloClient:
                     labels=labels,
                 )
             )
+
+        # return validated data models
         return cards

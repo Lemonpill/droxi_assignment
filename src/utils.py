@@ -4,8 +4,14 @@ from datetime import datetime
 from typing import Any
 from urllib.parse import urlparse
 from src.models.email import Email
+from src.models.card import Card
+
 
 def parse_curl(curl_cmd: str) -> tuple[str | None, dict, dict]:
+    """
+    parse curl to extract url, headers and cookies
+    """
+
     tokens = shlex.split(curl_cmd)
     headers = {}
     cookies = {}
@@ -36,12 +42,20 @@ def parse_curl(curl_cmd: str) -> tuple[str | None, dict, dict]:
 
 
 def cookies_for_playwright(cookies: dict, url: str) -> list[dict[str, Any]]:
+    """
+    create cookies compatible with playwright
+    """
+
     parsed = urlparse(url)
     domain = parsed.hostname
     return [{"name": k, "value": v, "domain": domain if domain.startswith(".") else f".{domain}", "path": "/", "secure": True, "httpOnly": False} for k, v in cookies.items()]
 
 
 def build_test_curl():
+    """
+    build curl string to avoid 2fa
+    """
+
     PAGE_URL_BOARD = os.getenv("PAGE_URL_BOARD", "https://trello.com/b/2GzdgPlw/droxi")
     ATLASSIAN_ACCOUNT_XSRF_TOKEN = os.getenv("ATLASSIAN_ACCOUNT_XSRF_TOKEN", "")
     CLOUD_SESSION_TOKEN = os.getenv("CLOUD_SESSION_TOKEN", "")
@@ -65,4 +79,23 @@ def build_test_curl():
 
 
 def parse_date(e: Email):
+    """
+    date parsing for gmail format
+    """
+
     return datetime.strptime(e.date, "%a, %d %b %Y %H:%M:%S %z")
+
+
+def cards_by_mail_subj(cards: list[Card], email_sub: str):
+    """
+    find cards by title from email subject
+    """
+
+    card_list: list[Card] = []
+    mail_title = email_sub.replace("Task: ", "")
+    for card in cards:
+        card_title = card.name
+        if mail_title != card_title:
+            continue
+        card_list.append(card)
+    return card_list

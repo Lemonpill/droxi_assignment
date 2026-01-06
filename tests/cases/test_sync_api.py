@@ -1,39 +1,35 @@
-"""
-Urgent Card Labeling: Each "mail" whose body contains the word "Urgent" should
-appear as a card in Trello with the "Urgent" label.
-"""
-
-import pytest
 from src.api_clients.gmail_client import GmailClient
 from src.api_clients.trello_client import TrelloClient
 from src.models.card import Card
+from src.utils import cards_by_mail_subj
 
 
 def test_sync_api(gmail_client: GmailClient, trello_client: TrelloClient):
+    """
+    Urgent Card Labeling: Each "mail" whose body contains the word "Urgent" should
+    appear as a card in Trello with the "Urgent" label.
+    """
+
     urgent_kw = "urgent"
 
     card_list = trello_client.card_list
     mail_list = gmail_client.mail
 
+    # iterate emails to find urgent ones
     card_urgt_list: list[Card] = []
-
     for mail in mail_list:
         mail_subj = mail.subject
         mail_body = mail.body
         is_urgent = urgent_kw in mail_body.lower()
-        mail_card = None
         if not is_urgent:
+            # not urgent = not relevant
             continue
-        for card in card_list:
-            mail_title = mail_subj.replace("Task: ", "")
-            card_title = card.name
-            if mail_title != card_title:
-                continue
-            mail_card = card
-            break
-        if not mail_card:
-            pytest.fail(f"no card for message {mail}")
-        card_urgt_list.append(mail_card)
+        mail_card_list = cards_by_mail_subj(card_list, mail_subj)
+        # email must have a card present
+        assert mail_card_list, f"card not found for message {mail_subj}"
+        card_urgt_list.extend(mail_card_list)
 
+    # iterate over all urgent cards to verify labels
     for cu in card_urgt_list:
-        assert cu and urgent_kw in [l.lower() for l in cu.labels]
+        # card labels must include "urgent" label
+        assert cu and urgent_kw in [l.lower() for l in cu.labels], f"expected 'urgent' label in '{cu.labels}'"

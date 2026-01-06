@@ -15,6 +15,10 @@ load_dotenv()
 
 @pytest.fixture(scope="session")
 def settings():
+    """
+    validates and returns system settings
+    """
+
     try:
         return Settings()
     except ValidationError as e:
@@ -25,6 +29,10 @@ def settings():
 
 @pytest.fixture(scope="session")
 def authenticated_page(settings: Settings):
+    """
+    creates an authenticated playwright session from curl
+    """
+
     curl = build_test_curl()
     url, headers, cookies = parse_curl(curl)
     cookies = cookies_for_playwright(cookies=cookies, url=url)
@@ -40,6 +48,10 @@ def authenticated_page(settings: Settings):
 
 @pytest.fixture(scope="session")
 def gmail_client():
+    """
+    configures mock gmail client component
+    """
+
     repo_root = os.path.dirname(os.path.dirname(__file__))
     data_file = os.path.join(repo_root, "data", "mock_gmail_data.json")
     return GmailClient(data_file)
@@ -47,6 +59,10 @@ def gmail_client():
 
 @pytest.fixture(scope="session")
 def trello_client(settings: Settings):
+    """
+    configures trello client component
+    """
+
     return TrelloClient(
         api_key=settings.TRELLO_API_KEY,
         api_token=settings.TRELLO_API_TOKEN,
@@ -56,6 +72,10 @@ def trello_client(settings: Settings):
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
+    """
+    attaches page source and screenshot to allure report in case a test fails
+    """
+
     outcome = yield
     rep = outcome.get_result()
     if not rep.when == "call" or not rep.failed:

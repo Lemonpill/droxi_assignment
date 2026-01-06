@@ -3,6 +3,10 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    """
+    parses / validates settings from environment variables
+    """
+
     PAGE_URL_BOARD: str = os.getenv("PAGE_URL_BOARD")
     ATLASSIAN_ACCOUNT_XSRF_TOKEN: str = os.getenv("ATLASSIAN_ACCOUNT_XSRF_TOKEN")
     CLOUD_SESSION_TOKEN: str = os.getenv("CLOUD_SESSION_TOKEN")

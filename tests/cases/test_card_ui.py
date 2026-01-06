@@ -1,21 +1,22 @@
-"""
-1. Login to trello.
-2. Navigate to the Trello Board link provided in Technical Details.
-3. Locate and open the "summarize the meeting" card from the board view.
-4. Extract and validate card details:
-    ○ Card title: Verify it matches "summarize the meeting".
-    ○ Description: Verify description text matches exactly: "For all of us. Please do so".
-    ○ Labels: Extract all labels and verify the "New" label is present.
-    ○ Current status: Verify the card is in the "To Do" column.
-5. Close the card modal and return to board view.
-"""
-
 from playwright.sync_api import Page
 from tests.settings import Settings
 from tests.pageobject.pages.board_page import BoardPage
 
 
 def test_card_ui(authenticated_page: Page, settings: Settings):
+    """
+    1. Login to trello.
+    2. Navigate to the Trello Board link provided in Technical Details.
+    3. Locate and open the "summarize the meeting" card from the board view.
+    4. Extract and validate card details:
+        ○ Card title: Verify it matches "summarize the meeting".
+        ○ Description: Verify description text matches exactly: "For all of us. Please do so".
+        ○ Labels: Extract all labels and verify the "New" label is present.
+        ○ Current status: Verify the card is in the "To Do" column.
+    5. Close the card modal and return to board view.
+    """
+
+    # expected card details
     exp_title = "summarize the meeting"
     exp_description = "For all of us. Please do so"
     exp_label = "New"
@@ -24,9 +25,8 @@ def test_card_ui(authenticated_page: Page, settings: Settings):
     page = BoardPage(page=authenticated_page, page_url=settings.PAGE_URL_BOARD)
     page.open()
 
+    # locate and open card by expected status and name
     card = page.get_list_card(list_name=exp_status, card_name=exp_title)
-    assert card.title == exp_title
-
     card_back = card.open()
 
     act_title = card_back.title
@@ -34,9 +34,13 @@ def test_card_ui(authenticated_page: Page, settings: Settings):
     act_labels = card_back.labels
     act_status = card_back.status
 
-    assert act_title == exp_title
-    assert act_description == exp_description
-    assert exp_label in act_labels
-    assert act_status == exp_status
+    # card title must match the expected
+    assert act_title == exp_title, f"expected title '{exp_title}'. got '{act_title}'"
+    # card description must match the expected
+    assert act_description == exp_description, f"expected description '{exp_description}'. got '{act_description}'"
+    # card must include the expected label
+    assert exp_label in act_labels, f"expected label '{exp_label}' in '{act_labels}'"
+    # card status must be equal expected status
+    assert act_status == exp_status, f"expected status '{exp_status}'. got '{act_status}'"
 
     card_back.close()
