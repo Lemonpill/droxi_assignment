@@ -1,0 +1,46 @@
+name: CI Docker Tests
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+      PAGE_URL_BOARD: ${{ secrets.PAGE_URL_BOARD }}
+      ATLASSIAN_ACCOUNT_XSRF_TOKEN: ${{ secrets.ATLASSIAN_ACCOUNT_XSRF_TOKEN }}
+      CLOUD_SESSION_TOKEN: ${{ secrets.CLOUD_SESSION_TOKEN }}
+      TEST_HEADLESS: ${{ secrets.TEST_HEADLESS }}
+      TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
+      TRELLO_API_TOKEN: ${{ secrets.TRELLO_API_TOKEN }}
+      TRELLO_API_URL: ${{ secrets.TRELLO_API_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t droxi-tests:ci .
+
+      - name: Run tests in container
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/reports
+          docker run --rm \
+            -e PAGE_URL_BOARD \
+            -e ATLASSIAN_ACCOUNT_XSRF_TOKEN \
+            -e CLOUD_SESSION_TOKEN \
+            -e TEST_HEADLESS \
+            -e TRELLO_API_KEY \
+            -e TRELLO_API_TOKEN \
+            -e TRELLO_API_URL \
+            -v $GITHUB_WORKSPACE/reports:/app/reports \
+            droxi-tests:ci
+
+      - if: always()
+        name: Upload Allure results
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: reports/allure-results
